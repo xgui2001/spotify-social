@@ -1,12 +1,31 @@
-# React + Vite
+# Spotify Social+
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+🎧 A Chrome extension that brings back the **Spotify Friend Activity** sidebar — now in a popup.
 
-Currently, two official plugins are available:
+Inspired by the retired Spotify desktop feature and extended with a sleek, hoverable UI and future social features like liking, commenting, and adding to playlists.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 🔍 Features
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- View what your friends are currently listening to on Spotify
+- Shows track, artist, context (playlist/album), and profile picture
+- Tracks real-time listening activity using Spotify’s internal API
+- Hoverable friend cards with a fixed header and smooth UI
+- Popup-based — doesn’t modify Spotify’s main interface
+
+---
+
+> ⚠️ This project is for educational/personal use only. It depends on internal, undocumented Spotify APIs and may break without notice.
+
+---
+
+## 🙏 Acknowledgments
+
+This project uses the token-sniffing strategy pioneered by [jackweatherford/spotify-friend-activity](https://github.com/jackweatherford/spotify-friend-activity) to access Spotify's internal friend activity API.
+
+---
+
+## 🛠 Getting Started
+
+WIP 
