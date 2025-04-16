@@ -1,0 +1,32 @@
+{
+    "manifest_version": 3,
+    "name": "Spotify Social+",
+    "version": "1.0",
+    "description": "View, like, and comment on your friends' Spotify activity.",
+    "permissions": ["storage", "scripting", "activeTab"],
+"host_permissions": ["https://open.spotify.com/*"],
+"background": {
+  "service_worker": "background.js"
+},
+"action": {
+  "default_popup": "index.html",
+  "default_icon": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  }
+},
+"content_scripts": [
+    {
+      "matches": ["https://open.spotify.com/*"],
+      "js": ["inject.js", "content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["fetch-api.js"],
+      "matches": ["https://open.spotify.com/*"]
+    }
+  ] 
+}
