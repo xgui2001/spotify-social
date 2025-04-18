@@ -1,4 +1,4 @@
-# Spotify Social+
+# Spotifriends
 
 🎧 A Chrome extension that brings back the **Spotify Friend Activity** sidebar — now in a popup.
 

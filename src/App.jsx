@@ -33,8 +33,9 @@ const FriendCard = ({ friend }) => {
       border: "1px solid rgba(40, 40, 40, 0.7)", // border styling
       backgroundColor: "rgba(30, 30, 30, 0.5)" // translucent dark background
     }}
-    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(50, 50, 50, 0.7)")}
-      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(30, 30, 30, 0.5)")}
+    
+onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1f1f1f")}
+onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(30,30,30,0.5)")}
     >
 
       {/* Profile image container */}

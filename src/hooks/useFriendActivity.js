@@ -16,12 +16,12 @@ export function useFriendActivity() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Try to get the token from chrome.storage first
+    // Step 1: Try to get the token from chrome.storage first
     chrome.storage.sync.get("accessToken", async ({ accessToken }) => {
-      if (accessToken) {
-        fetchAndSet(accessToken);
-      } else {
-        // Fallback: look for token in localStorage of an open Spotify tab
+      let token = accessToken;
+
+      if (!token) {
+        // Step 2: If not found in chrome.storage, check localStorage via scripting
         chrome.tabs.query({ url: "*://open.spotify.com/*" }, (tabs) => {
           if (!tabs.length) {
             setError("Please open Spotify to load friend activity");
@@ -46,6 +46,8 @@ export function useFriendActivity() {
             }
           );
         });
+      } else {
+        fetchAndSet(token);
       }
     });
 
