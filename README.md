@@ -1,12 +1,16 @@
-# React + Vite
+# Spotify Social+
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+🎧 A Chrome extension to view, like, and comment on your friends' Spotify listening activity — directly from your browser popup.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Recreates Spotify’s retired “Friend Activity” feed.
+- View track, artist, context (album/playlist) and user profile image.
+- Responsive popup UI with hover effects and sticky header.
+- Backend integration (likes/comments) coming soon!
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 🔧 Setup
+
+WIP
