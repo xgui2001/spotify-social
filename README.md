@@ -1,4 +1,4 @@
-# Spotify Social+
+# Spotifriends!
 
 🎧 A Chrome extension to view, like, and comment on your friends' Spotify listening activity — directly from your browser popup.
 

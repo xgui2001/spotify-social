@@ -1,8 +1,58 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import { useFriendActivity } from "./hooks/useFriendActivity";
+import Login from "./Login";
 
-// Utility: format seconds into human-readable time (already included in hook)
+// Simple SVG Icon components
+const HeartIcon = () => (
+  <svg 
+    width="18" 
+    height="18" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="#a7a7a7" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    style={{ cursor: "pointer" }}
+  >
+    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3.332.74-4.5 2.05A5.5 5.5 0 0 0 7.5 3 5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+  </svg>
+);
+
+const MessageIcon = () => (
+  <svg 
+    width="18" 
+    height="18" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="#a7a7a7" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    style={{ cursor: "pointer" }}
+  >
+    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg 
+    width="18" 
+    height="18" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="#a7a7a7" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    style={{ cursor: "pointer" }}
+  >
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+);
+
+// Utility: format seconds into human-readable time
 function formatTime(seconds) {
   const durations = [
     { unit: "min", value: 60 },
@@ -24,41 +74,61 @@ const FriendCard = ({ friend }) => {
   const { online, contextName, contextType, contextUrl, trackUrl, profileImage } = friend;
 
   return (
-    // Container for each friend's card
-    <div style={{
-      position: "relative",
-      margin: "8px 12px", // spacing around each card
-      padding: "16px 16px 40px 16px", // inner spacing
-      borderRadius: "8px", // rounded corners
-      border: "1px solid rgba(40, 40, 40, 0.7)", // border styling
-      backgroundColor: "rgba(30, 30, 30, 0.5)" // translucent dark background
-    }}
-    
-onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1f1f1f")}
-onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(30,30,30,0.5)")}
+    <div
+      style={{
+        position: "relative",
+        margin: "10px auto",
+        padding: "16px 16px 48px 16px",
+        borderRadius: "8px",
+        border: "1px solid rgba(40, 40, 40, 0.7)",
+        backgroundColor: "rgba(30, 30, 30, 0.5)",
+        width: "95%",
+        maxWidth: "340px",
+        boxSizing: "border-box",
+        overflow: "hidden",
+        transition: "background-color 0.3s ease"
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1f1f1f")}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(30, 30, 30, 0.5)")}
     >
-
       {/* Profile image container */}
-      <div style={{ width: 40, height: 40, position: "absolute", left: 16, top: 16 }}>
+      <div
+        style={{
+          width: 40,
+          height: 40,
+          position: "absolute",
+          left: 16,
+          top: 16,
+        }}
+      >
         {profileImage ? (
           <img
             src={profileImage}
             alt="profile"
-            style={{ borderRadius: "50%", width: "100%", height: "100%", objectFit: "cover" }}
+            style={{
+              borderRadius: "50%",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
           />
         ) : (
-          // Fallback icon if profile image is missing
-          <div style={{
-            borderRadius: "50%",
-            width: "100%",
-            height: "100%",
-            backgroundColor: "#333",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}>
+          <div
+            style={{
+              borderRadius: "50%",
+              width: "100%",
+              height: "100%",
+              backgroundColor: "#333",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#999" />
+              <path
+                d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"
+                fill="#999"
+              />
             </svg>
           </div>
         )}
@@ -67,9 +137,18 @@ onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(30,30,30,0.5
       {/* Right side content (textual info) */}
       <div style={{ marginLeft: 56, overflow: "hidden" }}>
         {/* Top row: Name and time ago */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 4,
+          }}
+        >
           {/* Friend name */}
-          <span style={{ fontSize: 14, fontWeight: 600, color: "#dddddd" }}>{friend.name}</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "#dddddd" }}>
+            {friend.name}
+          </span>
           {/* Time ago or online */}
           <span style={{ fontSize: 13, color: "#a7a7a7" }}>
             {online ? "Online" : formatTime(friend.secondsAgo)}
@@ -77,62 +156,177 @@ onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(30,30,30,0.5
         </div>
 
         {/* Track and artist info */}
-        <div style={{ fontSize: 14, color: "#dddddd", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "left", marginBottom: 4 }}>
-          <a href={trackUrl} target="_blank" style={{ color: "#dddddd", textDecoration: "none" }}>
+        <div
+          style={{
+            fontSize: 14,
+            color: "#dddddd",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            textAlign: "left",
+            marginBottom: 4,
+          }}
+        >
+          <a
+            href={trackUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#dddddd", textDecoration: "none" }}
+          >
             {friend.track} • {friend.artist}
           </a>
         </div>
 
         {/* Context link (playlist/album/etc.) */}
         <div style={{ display: "flex", alignItems: "center", marginTop: 4 }}>
-          <a href={contextUrl} target="_blank" style={{ fontSize: 12, color: "#a7a7a7", textDecoration: "none" }}>
+          <a
+            href={contextUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: 12, color: "#a7a7a7", textDecoration: "none" }}
+          >
             {contextName || contextType}
           </a>
         </div>
       </div>
 
       {/* Bottom right action buttons */}
-      <div style={{ position: "absolute", bottom: 12, right: 12, display: "flex", gap: 12 }}>
-        <div style={{ color: "#a7a7a7", cursor: "pointer" }}>❤️</div>
-        <div style={{ color: "#a7a7a7", cursor: "pointer" }}>💬</div>
-        <div style={{ color: "#a7a7a7", cursor: "pointer" }}>➕</div>
+      <div
+        style={{
+          position: "absolute",
+          bottom: 16,
+          right: 16,
+          display: "flex",
+          gap: 16,
+        }}
+      >
+        <HeartIcon />
+        <MessageIcon />
+        <PlusIcon />
       </div>
     </div>
   );
 };
 
-function App() {
+function FriendActivityFeed({ username }) {
   const { friendActivity, loading, error } = useFriendActivity();
 
   return (
-    // Main container for extension popup
-    <div style={{
-      background: "#121212", // dark Spotify background
-      color: "#fff",
-      width: 350,
-      fontFamily: "spotify-circular, Circular, Helvetica, Arial, sans-serif",
-      borderRadius: "8px",
-      overflow: "hidden"
-    }}>
-      {/* Header bar */}
-      <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2 style={{ fontSize: 16, margin: 0, fontWeight: 700 }}>Friend Activity</h2>
+    <div
+      style={{
+        background: "#121212",
+        color: "#fff",
+        width: "100%",
+        height: "100%",
+        fontFamily: "spotify-circular, Circular, Helvetica, Arial, sans-serif",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* Fixed Header - Left aligned with user info */}
+      <div
+        style={{
+          padding: "16px",
+          display: "flex",
+          justifyContent: "space-between", 
+          alignItems: "center",
+          width: "100%",
+          borderBottom: "1px solid rgba(40, 40, 40, 0.7)",
+          position: "sticky",
+          top: 0,
+          background: "#121212",
+          zIndex: 10,
+          paddingLeft: "24px"
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <h2 style={{ fontSize: 16, margin: 0, fontWeight: 700 }}>Friend Activity</h2>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <span style={{ fontSize: 14, color: "#a7a7a7", marginRight: 8 }}>
+            {username}
+          </span>
+          <button 
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "#a7a7a7",
+              fontSize: 13,
+              cursor: "pointer",
+              padding: "4px 8px",
+              borderRadius: "4px",
+              transition: "background-color 0.2s"
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+            onClick={() => {
+              localStorage.removeItem("spotifySocialUser");
+              window.location.reload();
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
-      {/* Conditional render: loading, error, or friend list */}
-      {loading ? (
-        <p style={{ padding: 16, color: "#aaa" }}>Loading friend activity…</p>
-      ) : error ? (
-        <p style={{ padding: 16, color: "#ff4d4f" }}>{error}</p>
-      ) : friendActivity.length === 0 ? (
-        <p style={{ padding: 16, color: "#aaa" }}>
-          No friend activity right now. Make sure Spotify is open and Friend Activity is enabled.
-        </p>
-      ) : (
-        friendActivity.map((friend) => <FriendCard key={friend.id} friend={friend} />)
-      )}
+      {/* Scrollable Content - hidden scrollbar class */}
+      <div className="friend-list-hidden-scrollbar">
+        {loading ? (
+          <p style={{ padding: 16, color: "#aaa", textAlign: "center" }} className="loading">
+            Loading friend activity…
+          </p>
+        ) : error ? (
+          <p style={{ padding: 16, color: "#ff4d4f", textAlign: "center" }}>
+            {error}
+          </p>
+        ) : friendActivity.length === 0 ? (
+          <p style={{ padding: 16, color: "#aaa", textAlign: "center" }}>
+            No friend activity right now. Make sure Spotify is open and Friend Activity is enabled.
+          </p>
+        ) : (
+          friendActivity.map((friend) => <FriendCard key={friend.id} friend={friend} />)
+        )}
+      </div>
     </div>
   );
+}
+
+function App() {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check for existing user in localStorage
+    const savedUser = localStorage.getItem("spotifySocialUser");
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        localStorage.removeItem("spotifySocialUser");
+      }
+    }
+    setIsLoading(false);
+  }, []);
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+
+  if (isLoading) {
+    return <div style={{ 
+      display: "flex", 
+      justifyContent: "center", 
+      alignItems: "center",
+      height: "100vh",
+      background: "#121212",
+      color: "#fff" 
+    }}>
+      <div className="loading">Loading...</div>
+    </div>;
+  }
+
+  return user ? <FriendActivityFeed username={user.username} /> : <Login onLogin={handleLogin} />;
 }
 
 export default App;
