@@ -79,17 +79,26 @@ const FriendCard = ({ friend }) => {
         position: "relative",
         margin: "10px auto",
         padding: "16px 16px 48px 16px",
-        borderRadius: "8px",
+        borderRadius: "10px", // Rounded corners for cards
         border: "1px solid rgba(40, 40, 40, 0.7)",
         backgroundColor: "rgba(30, 30, 30, 0.5)",
         width: "95%",
         maxWidth: "340px",
         boxSizing: "border-box",
         overflow: "hidden",
-        transition: "background-color 0.3s ease"
+        transition: "background-color 0.3s ease, transform 0.2s ease",
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
       }}
-      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1f1f1f")}
-      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(30, 30, 30, 0.5)")}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = "#1f1f1f";
+        e.currentTarget.style.transform = "translateY(-2px)";
+        e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "rgba(30, 30, 30, 0.5)";
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)";
+      }}
     >
       {/* Profile image container */}
       <div
@@ -218,9 +227,12 @@ function FriendActivityFeed({ username }) {
         color: "#fff",
         width: "100%",
         height: "100%",
-        fontFamily: "spotify-circular, Circular, Helvetica, Arial, sans-serif",
+        fontFamily: "Montserrat, sans-serif",
         display: "flex",
         flexDirection: "column",
+        borderRadius: "12px", // Add rounded corners to main container
+        overflow: "hidden",
+        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.3)" // Add shadow to the container
       }}
     >
       {/* Fixed Header - Left aligned with user info */}
@@ -236,7 +248,9 @@ function FriendActivityFeed({ username }) {
           top: 0,
           background: "#121212",
           zIndex: 10,
-          paddingLeft: "24px"
+          paddingLeft: "24px",
+          borderTopLeftRadius: "12px", // Round top corners
+          borderTopRightRadius: "12px"
         }}
       >
         <div style={{ display: "flex", alignItems: "center" }}>
@@ -254,12 +268,19 @@ function FriendActivityFeed({ username }) {
               color: "#a7a7a7",
               fontSize: 13,
               cursor: "pointer",
-              padding: "4px 8px",
-              borderRadius: "4px",
-              transition: "background-color 0.2s"
+              padding: "4px 12px",
+              borderRadius: "20px", // Rounded button
+              transition: "all 0.2s ease",
+              marginRight: "12px"
             }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)";
+              e.currentTarget.style.color = "white";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = "#a7a7a7";
+            }}
             onClick={() => {
               localStorage.removeItem("spotifySocialUser");
               window.location.reload();
@@ -271,9 +292,27 @@ function FriendActivityFeed({ username }) {
       </div>
 
       {/* Scrollable Content - hidden scrollbar class */}
-      <div className="friend-list-hidden-scrollbar">
+      <div 
+        style={{
+          overflowY: "auto",
+          maxHeight: "calc(600px - 53px)",
+          width: "100%",
+          msOverflowStyle: "none", /* IE and Edge */
+          scrollbarWidth: "none", /* Firefox */
+          paddingBottom: "12px"
+        }}
+      >
+        {/* Hide scrollbar for Chrome, Safari and Opera */}
+        <style>
+          {`
+            div::-webkit-scrollbar {
+              display: none;
+            }
+          `}
+        </style>
+        
         {loading ? (
-          <p style={{ padding: 16, color: "#aaa", textAlign: "center" }} className="loading">
+          <p style={{ padding: 16, color: "#aaa", textAlign: "center", animation: "pulse 1.5s infinite ease-in-out" }}>
             Loading friend activity…
           </p>
         ) : error ? (
@@ -314,16 +353,22 @@ function App() {
   };
 
   if (isLoading) {
-    return <div style={{ 
-      display: "flex", 
-      justifyContent: "center", 
-      alignItems: "center",
-      height: "100vh",
-      background: "#121212",
-      color: "#fff" 
-    }}>
-      <div className="loading">Loading...</div>
-    </div>;
+    return (
+      <div 
+        style={{ 
+          display: "flex", 
+          justifyContent: "center", 
+          alignItems: "center",
+          height: "100vh",
+          background: "#121212",
+          color: "#fff",
+          borderRadius: "12px",
+          overflow: "hidden"
+        }}
+      >
+        <div style={{ animation: "pulse 1.5s infinite ease-in-out" }}>Loading...</div>
+      </div>
+    );
   }
 
   return user ? <FriendActivityFeed username={user.username} /> : <Login onLogin={handleLogin} />;
