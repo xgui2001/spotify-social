@@ -18,3 +18,4 @@ db.connect()
   });
 
 module.exports = db;
+
