@@ -1,26 +1,29 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef} from "react";
 import "./App.css";
 import { useFriendActivity } from "./hooks/useFriendActivity";
 import Login from "./Login";
+import { trackService } from "./api/trackService";
 
 // Simple SVG Icon components
-const HeartIcon = () => (
+const HeartIcon = ({ active, onClick }) => (
   <svg 
     width="18" 
     height="18" 
     viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="#a7a7a7" 
+    fill={active ? "#1DB954" : "none"} 
+    stroke={active ? "#1DB954" : "#a7a7a7"} 
     strokeWidth="2" 
     strokeLinecap="round" 
     strokeLinejoin="round"
     style={{ cursor: "pointer" }}
+    onClick={onClick}
   >
     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3.332.74-4.5 2.05A5.5 5.5 0 0 0 7.5 3 5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
   </svg>
 );
 
-const MessageIcon = () => (
+// Play Icon component
+const PlayIcon = () => (
   <svg 
     width="18" 
     height="18" 
@@ -32,23 +35,7 @@ const MessageIcon = () => (
     strokeLinejoin="round"
     style={{ cursor: "pointer" }}
   >
-    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
-  </svg>
-);
-
-const PlusIcon = () => (
-  <svg 
-    width="18" 
-    height="18" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="#a7a7a7" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round"
-    style={{ cursor: "pointer" }}
-  >
-    <path d="M12 5v14M5 12h14" />
+    <polygon points="5 3 19 12 5 21 5 3" fill="#a7a7a7" stroke="none" />
   </svg>
 );
 
@@ -71,8 +58,12 @@ function formatTime(seconds) {
   return `${Math.round(seconds / durations.at(-1).value)} ${durations.at(-1).unit}`;
 }
 
+
 // UI Component: Friend activity card
 const FriendCard = ({ friend }) => {
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+
   // Add default values to prevent undefined errors
   const { 
     online = false, 
@@ -84,15 +75,51 @@ const FriendCard = ({ friend }) => {
     name = "Unknown Friend",
     track = "Unknown Track",
     artist = "Unknown Artist",
-    secondsAgo = 0
+    secondsAgo = 0,
+    trackId = "" // Add trackId for play functionality
   } = friend || {};
 
+  // Extract track Spotify ID from URI or URL
+  const getSpotifyId = (uri) => {
+    if (!uri) return null;
+    
+    // Handle both URI and URL formats
+    if (uri.includes('spotify:track:')) {
+      return uri.split('spotify:track:')[1];
+    } else if (uri.includes('/track/')) {
+      return uri.split('/track/')[1].split('?')[0];
+    }
+    return null;
+  };
+  
+  const spotifyId = getSpotifyId(trackUrl);
+  const trackUri = spotifyId ? `spotify:track:${spotifyId}` : null;
+
   // Add refs for text elements that might need marquee
-  const trackTextRef = React.useRef(null);
-  const contextTextRef = React.useRef(null);
+  const trackTextRef = useRef(null);
+  const contextTextRef = useRef(null);
+
+  // Function to play the track
+  const handlePlayTrack = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    // Get track ID from trackUrl or trackId
+    let spotifyTrackId = trackId;
+    if (!spotifyTrackId && trackUrl && trackUrl.includes('/track/')) {
+      spotifyTrackId = trackUrl.split('/track/')[1].split('?')[0];
+    }
+    
+    if (spotifyTrackId) {
+      window.open(`https://open.spotify.com/track/${spotifyTrackId}`, '_blank');
+    } else {
+      // If we can't extract ID, just use the trackUrl
+      window.open(trackUrl, '_blank');
+    }
+  };
 
   // Check for text overflow and add class if needed
-  React.useEffect(() => {
+  useEffect(() => {
     const checkOverflow = (element) => {
       if (element) {
         const span = element.querySelector('span');
@@ -107,6 +134,53 @@ const FriendCard = ({ friend }) => {
     checkOverflow(trackTextRef.current);
     checkOverflow(contextTextRef.current);
   }, [track, artist, contextName, contextType]); // Re-check when content changes
+
+  // Load likes when component mounts
+  useEffect(() => {
+    if (spotifyId) {
+      // Load likes
+      trackService.getTrackLikes(spotifyId)
+        .then(data => {
+          setLikeCount(data.likes?.length || 0);
+          // Check if current user has liked
+          const token = localStorage.getItem('spotifyAuthToken');
+          if (token) {
+            const userData = JSON.parse(localStorage.getItem('spotifySocialUser') || '{}');
+            const userId = userData.id;
+            setLiked(data.likes?.some(like => like.user_id === userId) || false);
+          }
+        })
+        .catch(err => console.error("Error loading likes:", err));
+    }
+  }, [spotifyId]);
+
+  // Handle like click
+  const handleLikeClick = async () => {
+    if (!spotifyId) return;
+    
+    try {
+      if (liked) {
+        await trackService.unlikeTrack(spotifyId);
+        setLiked(false);
+        setLikeCount(prev => Math.max(0, prev - 1));
+      } else {
+        // First ensure track exists in database
+        await trackService.ensureTrackExists({
+          spotifyId,
+          name: track,
+          artist,
+          album: contextType === 'album' ? contextName : '',
+          imageUrl: ''
+        });
+        
+        await trackService.likeTrack(spotifyId);
+        setLiked(true);
+        setLikeCount(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    }
+  };
 
   return (
     <div
@@ -232,12 +306,12 @@ const FriendCard = ({ friend }) => {
           style={{ display: "flex", alignItems: "center", marginTop: 4 }}
           className="marquee-text"
         >
-          <span>
+          <span style={{ fontSize: 12, color: "#a7a7a7" }}>
             <a
               href={contextUrl}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ fontSize: 12, color: "#a7a7a7", textDecoration: "none" }}
+              style={{ color: "#a7a7a7", textDecoration: "none" }}
             >
               {contextName || contextType || "Unknown Context"}
             </a>
@@ -253,11 +327,20 @@ const FriendCard = ({ friend }) => {
           right: 16,
           display: "flex",
           gap: 16,
+          alignItems: "center"
         }}
       >
-        <HeartIcon />
-        <MessageIcon />
-        <PlusIcon />
+        <div onClick={handlePlayTrack}>
+          <PlayIcon />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <HeartIcon active={liked} onClick={handleLikeClick} />
+          {likeCount > 0 && (
+            <span style={{ fontSize: 12, color: liked ? "#1DB954" : "#a7a7a7" }}>
+              {likeCount}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -306,7 +389,7 @@ function FriendActivityFeed({ username }) {
 
         <div style={{ display: "flex", alignItems: "center" }}>
           <span style={{ fontSize: 14, color: "#a7a7a7", marginRight: 8 }}>
-            {username || "User"}
+            {username}
           </span>
           <button 
             style={{
