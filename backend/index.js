@@ -1,4 +1,5 @@
 // index.js
+
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -63,13 +64,13 @@ app.get('/api/routes', (req, res) => {
   res.json({ routes });
 });
 
-// Import routes from auth module
-const { router: authRoutes } = require('./api/routes/auth');
-const tracksRoutes = require('./api/routes/tracks');
+// Import routes with proper paths
+const authRouter = require('./api/routes/auth');
+const tracksRouter = require('./api/routes/tracks');
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/tracks', tracksRoutes);
+app.use('/api/auth', authRouter);
+app.use('/api/tracks', tracksRouter);
 
 // Simple root route
 app.get('/', (req, res) => {
@@ -81,6 +82,19 @@ app.get('/', (req, res) => {
       '/api/auth/login',
       '/api/tracks'
     ]
+  });
+});
+
+// After your routes
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  const status = err.status || 500;
+  const message = err.message || 'An unexpected error occurred';
+  
+  res.status(status).json({
+    error: message,
+    // Only include stack trace in development
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 });
 
