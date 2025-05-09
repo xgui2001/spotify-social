@@ -1,3 +1,4 @@
+// index.js
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -5,6 +6,18 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Load database connection and test it on startup
+const { testConnection } = require('./db/pool');
+
+// Initialize database connection
+testConnection().then(success => {
+  if (success) {
+    console.log('Database connection successful!');
+  } else {
+    console.warn('Database connection failed! App will continue but database features may not work.');
+  }
+});
 
 // Middleware
 app.use(cors({
@@ -50,47 +63,26 @@ app.get('/api/routes', (req, res) => {
   res.json({ routes });
 });
 
-// Add these routes directly to your index.js
-app.get('/api/test-auth/login', (req, res) => {
-  console.log('Test auth login route accessed');
-  
-  // Hardcoded credentials and redirect URI
-  const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
-  const REDIRECT_URI = 'https://spotify-backend-88gdyc6hh-angelas-projects-c3d72215.vercel.app/api/test-auth/callback';
-  
-  // Generate a simple state
-  const state = Math.random().toString(36).substring(2, 15);
-  
-  // Construct a minimal auth URL
-  const authUrl = new URL('https://accounts.spotify.com/authorize');
-  authUrl.searchParams.append('response_type', 'code');
-  authUrl.searchParams.append('client_id', SPOTIFY_CLIENT_ID);
-  authUrl.searchParams.append('scope', 'user-read-email');
-  authUrl.searchParams.append('redirect_uri', REDIRECT_URI);
-  authUrl.searchParams.append('state', state);
-  
-  console.log('Redirecting to:', authUrl.toString());
-  
-  // Redirect to Spotify
-  res.redirect(authUrl.toString());
-});
+// Import routes from auth module
+const { router: authRouter } = require('./api/routes/auth');
+const tracksRouter = require('./api/routes/tracks');
 
-app.get('/api/test-auth/callback', (req, res) => {
-  console.log('Test auth callback accessed with query params:', req.query);
-  
-  // Just display the params for debugging
-  res.send(`
-    <h1>Auth Callback Received</h1>
-    <pre>${JSON.stringify(req.query, null, 2)}</pre>
-    <p>Check your server logs for more details.</p>
-  `);
-});
+// Routes
+app.use('/api/auth', authRouter);
+app.use('/api/tracks', tracksRouter);
 
-// Routes (we'll create these next)
-app.use('/api/auth', require('./api/routes/auth'));
-app.use('/api/tracks', require('./api/routes/tracks'));
-// Add this line to your existing routes
-app.use('/api/simple-auth', require('./api/simple-auth'));
+// Simple root route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Welcome to the Spotifriends API',
+    endpoints: [
+      '/api/health',
+      '/api/routes',
+      '/api/auth/login',
+      '/api/tracks'
+    ]
+  });
+});
 
 // Start server
 app.listen(PORT, () => {

@@ -14,12 +14,12 @@ const pool = new Pool({
 });
 
 // Add event listeners for connection issues
-pool.on('connect', (client) => {
-  console.log('Connected to database successfully');
+pool.on('connect', () => {
+  console.log('Connected to database');
 });
 
-pool.on('error', (err, client) => {
-  console.error('Unexpected error on idle client', err);
+pool.on('error', (err) => {
+  console.error('Unexpected database error:', err);
 });
 
 // Export a simplified query function
