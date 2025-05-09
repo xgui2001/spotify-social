@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import { useFriendActivity } from "./hooks/useFriendActivity";
 import Login from "./Login";
-import { getCurrentUser, logout } from "./auth.js";
 
 // Simple SVG Icon components
 const HeartIcon = () => (
@@ -55,6 +54,8 @@ const PlusIcon = () => (
 
 // Utility: format seconds into human-readable time
 function formatTime(seconds) {
+  if (!seconds && seconds !== 0) return "Unknown";
+  
   const durations = [
     { unit: "min", value: 60 },
     { unit: "hr", value: 60 },
@@ -72,7 +73,40 @@ function formatTime(seconds) {
 
 // UI Component: Friend activity card
 const FriendCard = ({ friend }) => {
-  const { online, contextName, contextType, contextUrl, trackUrl, profileImage } = friend;
+  // Add default values to prevent undefined errors
+  const { 
+    online = false, 
+    contextName = "", 
+    contextType = "", 
+    contextUrl = "#", 
+    trackUrl = "#", 
+    profileImage = null,
+    name = "Unknown Friend",
+    track = "Unknown Track",
+    artist = "Unknown Artist",
+    secondsAgo = 0
+  } = friend || {};
+
+  // Add refs for text elements that might need marquee
+  const trackTextRef = React.useRef(null);
+  const contextTextRef = React.useRef(null);
+
+  // Check for text overflow and add class if needed
+  React.useEffect(() => {
+    const checkOverflow = (element) => {
+      if (element) {
+        const span = element.querySelector('span');
+        if (span && span.scrollWidth > element.clientWidth) {
+          element.classList.add('overflow');
+        } else if (span) {
+          element.classList.remove('overflow');
+        }
+      }
+    };
+
+    checkOverflow(trackTextRef.current);
+    checkOverflow(contextTextRef.current);
+  }, [track, artist, contextName, contextType]); // Re-check when content changes
 
   return (
     <div
@@ -121,6 +155,10 @@ const FriendCard = ({ friend }) => {
               height: "100%",
               objectFit: "cover",
             }}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "https://i.scdn.co/image/ab6775700000ee85b5d374d281b9e510a7b9503b";
+            }}
           />
         ) : (
           <div
@@ -157,46 +195,53 @@ const FriendCard = ({ friend }) => {
         >
           {/* Friend name */}
           <span style={{ fontSize: 14, fontWeight: 600, color: "#dddddd" }}>
-            {friend.name}
+            {name}
           </span>
           {/* Time ago or online */}
           <span style={{ fontSize: 13, color: "#a7a7a7" }}>
-            {online ? "Online" : formatTime(friend.secondsAgo)}
+            {online ? "Online" : formatTime(secondsAgo)}
           </span>
         </div>
 
         {/* Track and artist info */}
         <div
+          ref={trackTextRef}
           style={{
             fontSize: 14,
             color: "#dddddd",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
             textAlign: "left",
             marginBottom: 4,
           }}
+          className="marquee-text"
         >
-          <a
-            href={trackUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: "#dddddd", textDecoration: "none" }}
-          >
-            {friend.track} • {friend.artist}
-          </a>
+          <span>
+            <a
+              href={trackUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#dddddd", textDecoration: "none" }}
+            >
+              {track} • {artist}
+            </a>
+          </span>
         </div>
 
         {/* Context link (playlist/album/etc.) */}
-        <div style={{ display: "flex", alignItems: "center", marginTop: 4 }}>
-          <a
-            href={contextUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ fontSize: 12, color: "#a7a7a7", textDecoration: "none" }}
-          >
-            {contextName || contextType}
-          </a>
+        <div 
+          ref={contextTextRef}
+          style={{ display: "flex", alignItems: "center", marginTop: 4 }}
+          className="marquee-text"
+        >
+          <span>
+            <a
+              href={contextUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontSize: 12, color: "#a7a7a7", textDecoration: "none" }}
+            >
+              {contextName || contextType || "Unknown Context"}
+            </a>
+          </span>
         </div>
       </div>
 
@@ -218,14 +263,9 @@ const FriendCard = ({ friend }) => {
   );
 };
 
-function FriendActivityFeed() {
-  const { friendActivity, loading, error } = useFriendActivity();
-  const user = getCurrentUser();
-
-  const handleLogout = () => {
-    logout();
-    window.location.reload();
-  };
+function FriendActivityFeed({ username }) {
+  // Add default empty array for friendActivity
+  const { friendActivity = [], loading, error } = useFriendActivity() || {};
 
   return (
     <div
@@ -266,7 +306,7 @@ function FriendActivityFeed() {
 
         <div style={{ display: "flex", alignItems: "center" }}>
           <span style={{ fontSize: 14, color: "#a7a7a7", marginRight: 8 }}>
-            {user?.username}
+            {username || "User"}
           </span>
           <button 
             style={{
@@ -288,7 +328,10 @@ function FriendActivityFeed() {
               e.currentTarget.style.backgroundColor = "transparent";
               e.currentTarget.style.color = "#a7a7a7";
             }}
-            onClick={handleLogout}
+            onClick={() => {
+              localStorage.removeItem("spotifySocialUser");
+              window.location.reload();
+            }}
           >
             Logout
           </button>
@@ -323,12 +366,13 @@ function FriendActivityFeed() {
           <p style={{ padding: 16, color: "#ff4d4f", textAlign: "center" }}>
             {error}
           </p>
-        ) : friendActivity.length === 0 ? (
+        ) : !friendActivity || friendActivity.length === 0 ? (
           <p style={{ padding: 16, color: "#aaa", textAlign: "center" }}>
             No friend activity right now. Make sure Spotify is open and Friend Activity is enabled.
           </p>
         ) : (
-          friendActivity.map((friend) => <FriendCard key={friend.id} friend={friend} />)
+          // Add null check and provide a key fallback
+          friendActivity.map((friend) => <FriendCard key={friend?.id || Math.random().toString()} friend={friend} />)
         )}
       </div>
     </div>
@@ -340,10 +384,14 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing user via our auth system
-    const currentUser = getCurrentUser();
-    if (currentUser) {
-      setUser(currentUser);
+    // Check for existing user in localStorage
+    const savedUser = localStorage.getItem("spotifySocialUser");
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        localStorage.removeItem("spotifySocialUser");
+      }
     }
     setIsLoading(false);
   }, []);
@@ -371,7 +419,7 @@ function App() {
     );
   }
 
-  return user ? <FriendActivityFeed /> : <Login onLogin={handleLogin} />;
+  return user ? <FriendActivityFeed username={user.username} /> : <Login onLogin={handleLogin} />;
 }
 
 export default App;

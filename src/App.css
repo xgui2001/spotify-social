@@ -1,3 +1,6 @@
+/* Font import - moved to the top */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -18,12 +21,63 @@
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+/* Marquee animation for text that overflows */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  10% {
+    transform: translateX(0); /* Stay at start for a moment */
+  }
+  50% {
+    transform: translateX(calc(-100% + 100px)); /* Scroll to show the end */
+  }
+  90% {
+    transform: translateX(calc(-100% + 100px)); /* Stay at end for a moment */
+  }
+  100% {
+    transform: translateX(0); /* Return to start */
+  }
+}
+
+.marquee-text {
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+}
+
+.marquee-text span {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.marquee-text.overflow span {
+  animation: marquee 8s linear infinite;
+  padding-right: 20px;
+}
+
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* pulse animation for loading */
+@keyframes pulse { 
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
   }
 }
 

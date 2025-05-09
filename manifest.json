@@ -3,7 +3,7 @@
     "name": "Spotify Social+",
     "version": "1.0",
     "description": "View, like, and comment on your friends' Spotify activity.",
-    "permissions": ["storage", "scripting", "activeTab"],
+    "permissions": ["storage", "scripting", "tabs", "activeTab"],
 "host_permissions": ["https://open.spotify.com/*"],
 "background": {
   "service_worker": "background.js"
