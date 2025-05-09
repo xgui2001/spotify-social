@@ -3,7 +3,7 @@ const pgp = require('pg-promise')();
 require('dotenv').config();
 
 // Default connection string if DATABASE_URL is not in .env
-const connectionString = process.env.DATABASE_URL || 'postgresql://localhost:5432/spotifriends';
+const connectionString = process.env.DATABASE_URL || 'postgres://neondb_owner:npg_c9y8kTQYRHwh@ep-young-sun-a46n2ft0-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require';
 
 const db = pgp(connectionString);
 
