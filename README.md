@@ -1,10 +1,6 @@
-# Spotifriends!
+# 🎧 Spotifriends 🎧 
 
-🎧 A Chrome extension to view, like, and comment on your friends' Spotify listening activity — directly from your browser popup.
-
-## Demo
-
-![Demo](./demo.gif)
+A Chrome extension to view, like, and comment on your friends' Spotify listening activity — directly from your browser popup.
 
 ## Features
 
@@ -14,6 +10,10 @@
 - Like and play tracks your friends are listening to.
 - Advanced backend integration (comments/shared playlists) coming soon!
 
+## Demo
+
+![Demo](./demo.gif)
+
 ## Getting Started
 
 ### Prerequisites
@@ -21,7 +21,7 @@
 - A Spotify account
 - Friends on Spotify with public listening activity enabled
 
-### 🔧 Setup
+### Setup
 
 1. Clone the repository:
 ```bash
