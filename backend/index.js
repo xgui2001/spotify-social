@@ -30,7 +30,7 @@ app.use(morgan('dev'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server is running' });
+  res.json({ status: 'ok', timestamp: new Date() });
 });
 
 // Debug route to list all registered routes
@@ -64,12 +64,12 @@ app.get('/api/routes', (req, res) => {
 });
 
 // Import routes from auth module
-const { router: authRouter } = require('./api/routes/auth');
-const tracksRouter = require('./api/routes/tracks');
+const { router: authRoutes } = require('./api/routes/auth');
+const tracksRoutes = require('./api/routes/tracks');
 
 // Routes
-app.use('/api/auth', authRouter);
-app.use('/api/tracks', tracksRouter);
+app.use('/api/auth', authRoutes);
+app.use('/api/tracks', tracksRoutes);
 
 // Simple root route
 app.get('/', (req, res) => {
@@ -88,3 +88,5 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+module.exports = app;
