@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import { useFriendActivity } from "./hooks/useFriendActivity";
 import Login from "./Login";
-import { getCurrentUser, logout } from "./auth";
+import { getCurrentUser, logout } from "./auth.js";
 
 // Simple SVG Icon components
 const HeartIcon = () => (
