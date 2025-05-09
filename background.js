@@ -168,3 +168,39 @@ function getFriendActivity() {
     });
   });
 }
+
+// Add this to your existing background.js
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === 'OPEN_AUTH_WINDOW') {
+    // Your OAuth URL
+const authUrl = 'https://spotify-backend-eta.vercel.app/api/auth/login';
+    
+    chrome.windows.create({
+      url: authUrl,
+      type: 'popup',
+      width: 500,
+      height: 600
+    }, (window) => {
+      // Store the window ID to track it
+      chrome.storage.local.set({ authWindowId: window.id });
+      sendResponse({ success: true });
+    });
+    
+    return true; // Keep the message channel open for async response
+  }
+});
+
+// Add a listener for window closing
+chrome.windows.onRemoved.addListener((windowId) => {
+  chrome.storage.local.get(['authWindowId'], (result) => {
+    if (result.authWindowId === windowId) {
+      // Auth window was closed without completing auth
+      chrome.storage.local.remove(['authWindowId']);
+      chrome.runtime.sendMessage({
+        type: 'auth_status',
+        status: 'error',
+        error: 'Authentication window was closed'
+      });
+    }
+  });
+});

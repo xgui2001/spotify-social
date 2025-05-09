@@ -26,3 +26,4 @@ dist-ssr
 # Ignore secrets
 auth.js
 .env
+.vercel

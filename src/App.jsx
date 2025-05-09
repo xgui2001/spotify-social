@@ -391,33 +391,33 @@ function FriendActivityFeed({ username }) {
           <span style={{ fontSize: 14, color: "#a7a7a7", marginRight: 8 }}>
             {username}
           </span>
-          <button 
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "#a7a7a7",
-              fontSize: 13,
-              cursor: "pointer",
-              padding: "4px 12px",
-              borderRadius: "20px", // Rounded button
-              transition: "all 0.2s ease",
-              marginRight: "12px"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)";
-              e.currentTarget.style.color = "white";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-              e.currentTarget.style.color = "#a7a7a7";
-            }}
-            onClick={() => {
-              localStorage.removeItem("spotifySocialUser");
-              window.location.reload();
-            }}
-          >
-            Logout
-          </button>
+<div 
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    padding: "6px",
+    borderRadius: "50%",
+    transition: "background-color 0.2s ease"
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.backgroundColor = "transparent";
+  }}
+  onClick={() => {
+    localStorage.removeItem("spotifySocialUser");
+    window.location.reload();
+  }}
+>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a7a7a7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+    <polyline points="16 17 21 12 16 7"></polyline>
+    <line x1="21" y1="12" x2="9" y2="12"></line>
+  </svg>
+</div>
         </div>
       </div>
 
