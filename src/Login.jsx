@@ -1,30 +1,24 @@
 import React, { useState } from "react";
 import "./Login.css";
+import { initiateSpotifyAuth } from "./auth";
 
 function Login({ onLogin }) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [activeTab, setActiveTab] = useState("signin"); // "signin" or "signup"
-  const [staySignedIn, setStaySignedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSpotifyLogin = async () => {
     setIsLoading(true);
+    setError(null);
     
-    // Simulate authentication (replace with actual auth logic)
-    setTimeout(() => {
-      // For demo purposes, any login succeeds
+    try {
+      const userData = await initiateSpotifyAuth();
+      onLogin(userData);
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.message || 'Failed to authenticate with Spotify');
+    } finally {
       setIsLoading(false);
-      
-      // Store auth state if "stay signed in" is checked
-      if (staySignedIn) {
-        localStorage.setItem("spotifySocialUser", JSON.stringify({ username }));
-      }
-      
-      // Call parent component's login handler
-      onLogin({ username });
-    }, 800);
+    }
   };
 
   return (
@@ -39,9 +33,9 @@ function Login({ onLogin }) {
       fontFamily: "Montserrat, sans-serif",
       maxWidth: "350px",
       margin: "0 auto",
-      borderRadius: "12px", // Add rounded corners
+      borderRadius: "12px",
       overflow: "hidden",
-      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.3)" // Add subtle shadow
+      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.3)"
     }}>
       <div style={{
         display: "flex",
@@ -55,11 +49,11 @@ function Login({ onLogin }) {
           gap: "8px",
           marginBottom: "6px"
         }}>
-          {/* User Icon */}
-          <svg viewBox="0 0 24 24" width="24" height="24">
+          {/* Spotify Icon */}
+          <svg viewBox="0 0 24 24" width="28" height="28">
             <path
               fill="#1DB954"
-              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+              d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.48.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"
             />
           </svg>
           <span style={{
@@ -73,189 +67,73 @@ function Login({ onLogin }) {
           color: "#a7a7a7",
           margin: "0",
           textAlign: "center"
-        }}>see what your friends are listening!</p>
+        }}>see what your friends are listening to!</p>
       </div>
       
-      <div style={{
-        display: "flex",
-        width: "100%",
-        marginBottom: "24px",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.1)"
-      }}>
-        <button 
-          style={{
-            flex: "1",
-            background: "transparent",
-            border: "none",
-            color: activeTab === "signin" ? "white" : "#a7a7a7",
-            padding: "12px 0",
-            fontSize: "14px",
-            fontWeight: "700",
-            cursor: "pointer",
-            position: "relative",
-            letterSpacing: "1px",
-            borderBottom: activeTab === "signin" ? "2px solid #1DB954" : "none"
-          }}
-          onClick={() => setActiveTab("signin")}
-        >
-          SIGN IN
-        </button>
-        <button 
-          style={{
-            flex: "1",
-            background: "transparent",
-            border: "none",
-            color: activeTab === "signup" ? "white" : "#a7a7a7",
-            padding: "12px 0",
-            fontSize: "14px",
-            fontWeight: "700",
-            cursor: "pointer",
-            position: "relative",
-            letterSpacing: "1px",
-            borderBottom: activeTab === "signup" ? "2px solid #1DB954" : "none"
-          }}
-          onClick={() => setActiveTab("signup")}
-        >
-          SIGN UP
-        </button>
-      </div>
-      
-      <form 
-        onSubmit={handleSubmit}
-        style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px"
-        }}
-      >
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Username"
-          required
-          style={{
-            width: "100%",
-            padding: "14px",
-            borderRadius: "30px",
-            border: "none",
-            backgroundColor: "white",
-            fontSize: "14px",
-            color: "#333",
-            boxSizing: "border-box"
-          }}
-        />
-        
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          required
-          style={{
-            width: "100%",
-            padding: "14px",
-            borderRadius: "30px",
-            border: "none",
-            backgroundColor: "white",
-            fontSize: "14px",
-            color: "#333",
-            boxSizing: "border-box"
-          }}
-        />
-        
+      {error && (
         <div style={{
+          backgroundColor: "rgba(255, 77, 79, 0.1)",
+          border: "1px solid rgba(255, 77, 79, 0.3)",
+          borderRadius: "4px",
+          padding: "12px",
+          marginBottom: "20px",
+          color: "#ff4d4f",
+          width: "100%",
+          textAlign: "center",
+          fontSize: "14px"
+        }}>
+          {error}
+        </div>
+      )}
+      
+      <button 
+        onClick={handleSpotifyLogin}
+        disabled={isLoading}
+        style={{
           display: "flex",
           alignItems: "center",
-          margin: "4px 0 16px 4px"
-        }}>
-          <div style={{
-            position: "relative",
-            width: "16px",
-            height: "16px",
-            marginRight: "8px"
-          }}>
-            <input
-              type="checkbox"
-              id="stay-signed-in"
-              checked={staySignedIn}
-              onChange={() => setStaySignedIn(!staySignedIn)}
-              style={{
-                appearance: "none",
-                WebkitAppearance: "none",
-                width: "16px",
-                height: "16px",
-                border: `1px solid ${staySignedIn ? "#1DB954" : "#a7a7a7"}`,
-                borderRadius: "2px",
-                backgroundColor: staySignedIn ? "#1DB954" : "transparent",
-                cursor: "pointer",
-                position: "absolute",
-                top: 0,
-                left: 0
-              }}
-            />
-            {staySignedIn && (
-              <span style={{
-                position: "absolute",
-                top: "0px",
-                left: "3px",
-                color: "white",
-                fontSize: "12px"
-              }}>✓</span>
-            )}
-          </div>
-          <label 
-            htmlFor="stay-signed-in"
-            style={{
-              fontSize: "14px",
-              color: "#a7a7a7",
-              cursor: "pointer"
-            }}
-          >
-            stay signed in
-          </label>
-        </div>
-        
-        <button 
-          type="submit" 
-          style={{
-            width: "100%",
-            padding: "14px",
-            backgroundColor: "#1DB954",
-            color: "white",
-            border: "none",
-            borderRadius: "30px",
-            fontSize: "14px",
-            fontWeight: "700",
-            cursor: "pointer",
-            transition: "background-color 0.2s ease",
-            marginTop: "8px",
-            letterSpacing: "1px",
-            opacity: isLoading ? 0.7 : 1
-          }}
-          disabled={isLoading}
-        >
-          {activeTab === "signin" ? "SIGN IN" : "SIGN UP"}
-        </button>
-      </form>
+          justifyContent: "center",
+          width: "100%",
+          padding: "14px",
+          backgroundColor: "#1DB954",
+          color: "white",
+          border: "none",
+          borderRadius: "30px",
+          fontSize: "14px",
+          fontWeight: "700",
+          cursor: isLoading ? "not-allowed" : "pointer",
+          transition: "background-color 0.2s ease",
+          marginTop: "20px",
+          opacity: isLoading ? 0.7 : 1,
+          gap: "8px"
+        }}
+      >
+        {isLoading ? (
+          <span style={{ display: "inline-block", animation: "pulse 1.5s infinite ease-in-out" }}>
+            Connecting...
+          </span>
+        ) : (
+          <>
+            <svg viewBox="0 0 24 24" width="20" height="20">
+              <path
+                fill="white"
+                d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.48.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"
+              />
+            </svg>
+            LOGIN WITH SPOTIFY
+          </>
+        )}
+      </button>
       
-      <div style={{
-        marginTop: "24px"
+      <p style={{
+        fontSize: "13px",
+        color: "#a7a7a7",
+        marginTop: "20px",
+        textAlign: "center",
+        lineHeight: "1.5"
       }}>
-        <a 
-          href="#"
-          style={{
-            color: "#a7a7a7",
-            fontSize: "14px",
-            textDecoration: "none"
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = "white"}
-          onMouseLeave={(e) => e.currentTarget.style.color = "#a7a7a7"}
-        >
-          Forgot Password?
-        </a>
-      </div>
+        Connect with your Spotify account to see and interact with what your friends are listening to.
+      </p>
     </div>
   );
 }

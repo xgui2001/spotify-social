@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import { useFriendActivity } from "./hooks/useFriendActivity";
 import Login from "./Login";
+import { getCurrentUser, logout } from "./auth";
 
 // Simple SVG Icon components
 const HeartIcon = () => (
@@ -217,8 +218,14 @@ const FriendCard = ({ friend }) => {
   );
 };
 
-function FriendActivityFeed({ username }) {
+function FriendActivityFeed() {
   const { friendActivity, loading, error } = useFriendActivity();
+  const user = getCurrentUser();
+
+  const handleLogout = () => {
+    logout();
+    window.location.reload();
+  };
 
   return (
     <div
@@ -259,7 +266,7 @@ function FriendActivityFeed({ username }) {
 
         <div style={{ display: "flex", alignItems: "center" }}>
           <span style={{ fontSize: 14, color: "#a7a7a7", marginRight: 8 }}>
-            {username}
+            {user?.username}
           </span>
           <button 
             style={{
@@ -281,10 +288,7 @@ function FriendActivityFeed({ username }) {
               e.currentTarget.style.backgroundColor = "transparent";
               e.currentTarget.style.color = "#a7a7a7";
             }}
-            onClick={() => {
-              localStorage.removeItem("spotifySocialUser");
-              window.location.reload();
-            }}
+            onClick={handleLogout}
           >
             Logout
           </button>
@@ -336,14 +340,10 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing user in localStorage
-    const savedUser = localStorage.getItem("spotifySocialUser");
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        localStorage.removeItem("spotifySocialUser");
-      }
+    // Check for existing user via our auth system
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
     }
     setIsLoading(false);
   }, []);
@@ -371,7 +371,7 @@ function App() {
     );
   }
 
-  return user ? <FriendActivityFeed username={user.username} /> : <Login onLogin={handleLogin} />;
+  return user ? <FriendActivityFeed /> : <Login onLogin={handleLogin} />;
 }
 
 export default App;

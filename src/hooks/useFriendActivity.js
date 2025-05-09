@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
+import { getSpotifyToken } from "../auth";
 import { enrichContext } from "../context";
 
 /**
  * useFriendActivity - A custom hook to fetch and format Spotify Friend Activity
  *
  * Handles:
- * - Spotify token retrieval from chrome.storage.sync or localStorage (via scripting)
+ * - Spotify token retrieval through auth.js
  * - Data fetching from Spotify internal API
  * - Context enrichment (e.g., getting playlist/album names)
  * - Online status + track/context URL formatting
@@ -16,44 +17,18 @@ export function useFriendActivity() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Step 1: Try to get the token from chrome.storage first
-    chrome.storage.sync.get("accessToken", async ({ accessToken }) => {
-      let token = accessToken;
-
-      if (!token) {
-        // Step 2: If not found in chrome.storage, check localStorage via scripting
-        chrome.tabs.query({ url: "*://open.spotify.com/*" }, (tabs) => {
-          if (!tabs.length) {
-            setError("Please open Spotify to load friend activity");
-            setLoading(false);
-            return;
-          }
-
-          chrome.scripting.executeScript(
-            {
-              target: { tabId: tabs[0].id },
-              func: () => localStorage.getItem("accessTokenBackup"),
-            },
-            ([result]) => {
-              const fallbackToken = result?.result;
-              if (fallbackToken) {
-                chrome.storage.sync.set({ accessToken: fallbackToken });
-                fetchAndSet(fallbackToken);
-              } else {
-                setError("Could not retrieve Spotify token");
-                setLoading(false);
-              }
-            }
-          );
-        });
-      } else {
-        fetchAndSet(token);
-      }
-    });
-
-    // Helper: fetch and format data
-    async function fetchAndSet(token) {
+    let isMounted = true;
+    
+    async function fetchFriendActivity() {
       try {
+        // Get a valid token from our auth utility
+        const token = await getSpotifyToken();
+        
+        if (!token) {
+          throw new Error("No authentication token available");
+        }
+        
+        // Fetch friend activity data
         const response = await fetch(
           "https://guc-spclient.spotify.com/presence-view/v1/buddylist",
           {
@@ -62,20 +37,17 @@ export function useFriendActivity() {
         );
 
         if (!response.ok) {
-          setError(`Spotify API returned ${response.status}`);
-          setLoading(false);
-          return;
+          throw new Error(`Spotify API returned ${response.status}`);
         }
 
         const rawBody = await response.text();
         if (!rawBody) {
-          setError("Spotify returned an empty body");
-          setLoading(false);
-          return;
+          throw new Error("Spotify returned an empty body");
         }
 
         const data = JSON.parse(rawBody);
 
+        // Process and enrich the data
         const enriched = await Promise.all(
           (data.friends || []).map(async (f) => {
             const secondsAgo = Math.round((Date.now() - f.timestamp) / 1000);
@@ -122,14 +94,33 @@ export function useFriendActivity() {
           })
         );
 
-        setFriendActivity(enriched);
-        setLoading(false);
+        // Only update state if the component is still mounted
+        if (isMounted) {
+          setFriendActivity(enriched);
+          setLoading(false);
+        }
       } catch (err) {
         console.error("❌ Error fetching Spotify data:", err);
-        setError("Something went wrong fetching data");
-        setLoading(false);
+        
+        if (isMounted) {
+          setError(err.message || "Something went wrong fetching data");
+          setLoading(false);
+        }
       }
     }
+
+    fetchFriendActivity();
+
+    // Set up polling to refresh data every minute
+    const intervalId = setInterval(() => {
+      fetchFriendActivity();
+    }, 60000);
+
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
   }, []);
 
   return { friendActivity, loading, error };
