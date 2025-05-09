@@ -44,3 +44,39 @@ chrome.action.onClicked.addListener((tab) => {
     console.log("⚠️ Not a Spotify tab:", tab.url);
   }
 });
+
+
+// Listen for messages from popup or content scripts
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    console.log("Background script received message:", request);
+    
+    if (request.type === 'auth_started') {
+      console.log('Auth process started');
+    }
+    
+    if (request.type === 'auth_completed') {
+      console.log('Auth process completed');
+      // Notify any open extension pages
+      chrome.runtime.sendMessage({
+        type: 'auth_status',
+        status: 'success',
+        user: request.user
+      });
+    }
+    
+    if (request.type === 'auth_failed') {
+      console.log('Auth process failed:', request.error);
+      // Notify any open extension pages
+      chrome.runtime.sendMessage({
+        type: 'auth_status',
+        status: 'error',
+        error: request.error
+      });
+    }
+    
+    // Always send a response to avoid "Receiving end does not exist" errors
+    sendResponse({received: true});
+    return true;  // Keep the channel open for async responses
+  }
+);
