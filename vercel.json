@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "outputDirectory": "backend",
+  "builds": [
+    { "src": "backend/index.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "backend/index.js" }
+  ]
+}
